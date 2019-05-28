@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
@@ -35,6 +36,23 @@ public class ConcatMergeSwitchOnNext {
                 bob.map(w -> "Bob: " + w),
                 jane.map(w -> "Jane: " + w)
         ).subscribe(System.out::println);
+
+        TimeUnit.SECONDS.sleep(25);
+    }
+
+    @Test
+    public void switchOnNext() throws InterruptedException {
+        final Random random = new Random();
+
+        final Observable<Observable<String>> quotes = Observable.just(
+                alice.map(w -> "Alice: " + w),
+                bob.map(w -> "Bob: " + w),
+                jane.map(w -> "Jane: " + w))
+                .flatMap(innerObj -> Observable.just(innerObj)
+                        .delay(random.nextInt(5), TimeUnit.SECONDS));
+
+        final Disposable subscribe = Observable.switchOnNext(quotes)
+                .subscribe(System.out::println);
 
         TimeUnit.SECONDS.sleep(25);
     }
